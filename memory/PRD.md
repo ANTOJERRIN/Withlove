@@ -1,38 +1,53 @@
 # WithLove - Heart Risk Prediction Dashboard
 
 ## Original Problem Statement
-Create a modern healthcare web dashboard for an AI Heart Risk Prediction System named "WithLove". Users should be able to input ALL dataset parameters (28 features). The app uses a trained ML model (heart_model.pkl) for predictions.
+Create a healthcare dashboard with AI Heart Risk Prediction, AR Heart Visualization with risk-based colors, and ChatGPT integration for health assistant.
 
 ## Architecture
-- **Frontend**: React with Tailwind CSS + Shadcn UI components
-- **Backend**: FastAPI with scikit-learn ML model integration
-- **Database**: MongoDB (not used for predictions)
-- **ML Model**: RandomForest pipeline with StandardScaler and SimpleImputer
+- **Frontend**: React with Tailwind CSS + Shadcn UI
+- **Backend**: FastAPI with scikit-learn ML model + OpenAI GPT-4o via emergentintegrations
+- **ML Model**: RandomForest pipeline (heart_model.pkl) with 28 features
+- **AI Chat**: GPT-4o via Emergent LLM key
 
 ## What's Been Implemented (Jan 2026)
-- [x] Renamed to "WithLove" branding (header, footer, chatbot)
-- [x] Removed "Learn More" button from hero section
-- [x] Comprehensive health form with 28 parameters in two tabs:
-  - Clinical Parameters (13): age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal
-  - Lifestyle & Vitals (13): gender, bmi, daily_steps, sleep_hours, water_intake_l, calories_consumed, smoker, alcohol, resting_hr, systolic_bp, diastolic_bp, cholesterol_level, family_history
+
+### AR Heart Visualization
+- [x] Dynamic color system based on risk percentage:
+  - Green (0-40%): Low Risk - slow heartbeat
+  - Yellow (41-70%): Moderate Risk - moderate heartbeat  
+  - Red (71-100%): High Risk - fast heartbeat
+- [x] CSS-based animated heart with pulsing rings
+- [x] ECG line animation
+- [x] Risk level overlay with status and probability
+- [x] Color legend for risk levels
+- [x] Ready for Unity WebGL integration
+
+### ChatGPT Integration
+- [x] GPT-4o powered health assistant
+- [x] Context-aware responses using user health data
+- [x] Quick action buttons for common questions
+- [x] Session-based conversation history
+- [x] "Powered by ChatGPT" branding
+
+### Health Form & Prediction
+- [x] 28 parameters across 2 tabs (Clinical + Lifestyle)
 - [x] ML model integration for real predictions
 - [x] Personalized recommendations based on user data
-- [x] Color-coded risk display (Low=Green, Moderate=Yellow, High=Red)
-- [x] All 8 sections functional (Header, Hero, Form, Image Upload, AR, Results, Precautions, Chatbot, Footer)
+- [x] Color-coded risk results
 
-## Backend API Endpoints
-- GET /api/ - Health check
+## API Endpoints
+- POST /api/predict - Heart risk prediction (28 features)
+- POST /api/chat - ChatGPT health assistant
 - GET /api/health - Model status
 - GET /api/feature-info - Feature documentation
-- POST /api/predict - Heart risk prediction (28 features)
 
 ## Risk Classification
-- Low: probability < 35%
-- Moderate: 35% <= probability < 65%
-- High: probability >= 65%
+- Low: probability <= 40% (Green)
+- Moderate: 40% < probability <= 70% (Yellow)
+- High: probability > 70% (Red)
 
 ## Next Tasks
-1. Connect AI chatbot to actual LLM API (ChatGPT/Gemini)
-2. Embed Unity WebGL heart model in AR container
-3. Add user authentication for health history tracking
-4. Implement PDF report generation
+1. Integrate actual Unity WebGL 3D heart model
+2. Add user authentication for history tracking
+3. PDF report generation
+4. Email notifications for high-risk alerts
