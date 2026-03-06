@@ -1,34 +1,227 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* CardioVision AI - Custom Styles */
+
+/* Header Styles */
+.header-gradient {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.03) 0%, rgba(13, 148, 136, 0.08) 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* ECG Line Animation */
+.ecg-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawEcg 3s ease-in-out infinite;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+@keyframes drawEcg {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -1000;
+  }
 }
 
-.App-link {
-    color: #61dafb;
+/* Form Input Focus Styles */
+.input-focus-teal:focus-within {
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Image Upload Area */
+.upload-area {
+  border: 2px dashed #E2E8F0;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+  border-color: #0D9488;
+  background-color: rgba(13, 148, 136, 0.05);
+}
+
+.upload-area.dragging {
+  border-color: #0D9488;
+  background-color: rgba(13, 148, 136, 0.1);
+}
+
+/* Scanning Overlay */
+.scan-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(180deg, transparent, rgba(13, 148, 136, 0.8), transparent);
+  animation: scan 2s linear infinite;
+}
+
+/* AR Container */
+.ar-container {
+  background: linear-gradient(145deg, #0F172A 0%, #1E293B 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.ar-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* Pulsing Heart Container */
+.heart-pulse-container {
+  position: relative;
+}
+
+.heart-pulse-ring {
+  position: absolute;
+  inset: -20px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+.heart-pulse-ring:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.heart-pulse-ring:nth-child(3) {
+  animation-delay: 1s;
+}
+
+/* Risk Level Cards */
+.risk-low {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-left: 4px solid #22C55E;
+}
+
+.risk-moderate {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(234, 179, 8, 0.05) 100%);
+  border-left: 4px solid #EAB308;
+}
+
+.risk-high {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-left: 4px solid #EF4444;
+}
+
+/* Precaution Cards */
+.precaution-must-do {
+  border-top: 3px solid #EF4444;
+}
+
+.precaution-important {
+  border-top: 3px solid #EAB308;
+}
+
+.precaution-better {
+  border-top: 3px solid #22C55E;
+}
+
+/* Chat Interface */
+.chat-container {
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.chat-message-user {
+  background: #F1F5F9;
+  border-radius: 18px 18px 4px 18px;
+}
+
+.chat-message-ai {
+  background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
+  color: white;
+  border-radius: 18px 18px 18px 4px;
+}
+
+.chat-input-container {
+  background: white;
+  border: 1px solid #E2E8F0;
+  transition: all 0.3s ease;
+}
+
+.chat-input-container:focus-within {
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+/* Result Animations */
+.result-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.result-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Progress Bar */
+.progress-bar-fill {
+  transition: width 1s ease-out;
+}
+
+/* Metric Cards */
+.metric-card {
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Footer */
+.footer-gradient {
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%);
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 1.75rem;
+    line-height: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus States */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #0D9488;
+  outline-offset: 2px;
+}
+
+/* Loading States */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 0%,
+    #E2E8F0 50%,
+    #F1F5F9 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
