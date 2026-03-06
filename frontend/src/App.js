@@ -7,6 +7,9 @@ import { Label } from "./components/ui/label";
 import { Badge } from "./components/ui/badge";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { Separator } from "./components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import axios from "axios";
 import { 
   Heart, 
   Activity, 
@@ -26,8 +29,20 @@ import {
   Zap,
   Menu,
   X,
-  ChevronDown
+  Footprints,
+  Moon,
+  GlassWater,
+  Flame,
+  Cigarette,
+  Wine,
+  HeartPulse,
+  Stethoscope,
+  Users,
+  Loader2
 } from "lucide-react";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 // Header Component
 const Header = () => {
@@ -44,7 +59,7 @@ const Header = () => {
               <div className="absolute inset-0 h-8 w-8 bg-[#EF4444]/20 rounded-full animate-pulse-ring" />
             </div>
             <div>
-              <h1 className="text-lg md:text-xl font-bold text-[#0F172A] tracking-tight">CardioVision AI</h1>
+              <h1 className="text-lg md:text-xl font-bold text-[#0F172A] tracking-tight">WithLove</h1>
             </div>
           </div>
 
@@ -143,15 +158,6 @@ const HeroSection = () => {
               <Heart className="h-5 w-5 mr-2" />
               Start Assessment
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-slate-300 hover:border-[#0D9488] hover:text-[#0D9488]"
-              data-testid="learn-more-btn"
-            >
-              Learn More
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
           </div>
         </div>
       </div>
@@ -159,8 +165,8 @@ const HeroSection = () => {
   );
 };
 
-// Health Data Input Form
-const HealthInputForm = ({ formData, setFormData, onSubmit }) => {
+// Health Data Input Form with ALL parameters
+const HealthInputForm = ({ formData, setFormData, onSubmit, isLoading }) => {
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -177,113 +183,528 @@ const HealthInputForm = ({ formData, setFormData, onSubmit }) => {
           </p>
         </div>
 
-        <Card className="max-w-4xl mx-auto shadow-lg border-0 card-hover" data-testid="health-form-card">
-          <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-            <CardTitle className="flex items-center gap-2 text-[#0F172A]">
-              <Activity className="h-5 w-5 text-[#0D9488]" />
-              Health Parameters
-            </CardTitle>
-            <CardDescription>Enter your current health measurements below</CardDescription>
-          </CardHeader>
+        <Card className="max-w-5xl mx-auto shadow-lg border-0 card-hover" data-testid="health-form-card">
           <CardContent className="p-6 md:p-8">
             <form id="health-data-form" onSubmit={(e) => { e.preventDefault(); onSubmit(); }} data-testid="health-form">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Age */}
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="flex items-center gap-2 text-sm font-medium">
-                    <User className="h-4 w-4 text-[#0D9488]" />
-                    Age (years)
-                  </Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Enter your age"
-                    min="1"
-                    max="120"
-                    value={formData.age}
-                    onChange={(e) => handleInputChange('age', e.target.value)}
-                    className="input-focus-teal"
-                    data-testid="input-age"
-                  />
-                </div>
+              <Tabs defaultValue="clinical" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-8">
+                  <TabsTrigger value="clinical" className="text-sm">
+                    <Stethoscope className="h-4 w-4 mr-2" />
+                    Clinical Parameters
+                  </TabsTrigger>
+                  <TabsTrigger value="lifestyle" className="text-sm">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Lifestyle & Vitals
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Blood Pressure */}
-                <div className="space-y-2">
-                  <Label htmlFor="bloodPressure" className="flex items-center gap-2 text-sm font-medium">
-                    <Gauge className="h-4 w-4 text-[#0D9488]" />
-                    Blood Pressure (mmHg)
-                  </Label>
-                  <Input
-                    id="bloodPressure"
-                    type="number"
-                    placeholder="e.g., 120"
-                    min="60"
-                    max="250"
-                    value={formData.bloodPressure}
-                    onChange={(e) => handleInputChange('bloodPressure', e.target.value)}
-                    className="input-focus-teal"
-                    data-testid="input-blood-pressure"
-                  />
-                </div>
+                {/* Clinical Parameters Tab */}
+                <TabsContent value="clinical" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Age */}
+                    <div className="space-y-2">
+                      <Label htmlFor="age" className="flex items-center gap-2 text-sm font-medium">
+                        <User className="h-4 w-4 text-[#0D9488]" />
+                        Age (years)
+                      </Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="e.g., 55"
+                        min="0"
+                        max="120"
+                        value={formData.age}
+                        onChange={(e) => handleInputChange('age', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-age"
+                        required
+                      />
+                    </div>
 
-                {/* Cholesterol */}
-                <div className="space-y-2">
-                  <Label htmlFor="cholesterol" className="flex items-center gap-2 text-sm font-medium">
-                    <Droplets className="h-4 w-4 text-[#0D9488]" />
-                    Cholesterol (mg/dL)
-                  </Label>
-                  <Input
-                    id="cholesterol"
-                    type="number"
-                    placeholder="e.g., 200"
-                    min="100"
-                    max="400"
-                    value={formData.cholesterol}
-                    onChange={(e) => handleInputChange('cholesterol', e.target.value)}
-                    className="input-focus-teal"
-                    data-testid="input-cholesterol"
-                  />
-                </div>
+                    {/* Sex */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <User className="h-4 w-4 text-[#0D9488]" />
+                        Sex
+                      </Label>
+                      <Select value={formData.sex} onValueChange={(v) => handleInputChange('sex', v)}>
+                        <SelectTrigger data-testid="input-sex">
+                          <SelectValue placeholder="Select sex" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Female</SelectItem>
+                          <SelectItem value="1">Male</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* Heart Rate */}
-                <div className="space-y-2">
-                  <Label htmlFor="heartRate" className="flex items-center gap-2 text-sm font-medium">
-                    <Activity className="h-4 w-4 text-[#0D9488]" />
-                    Heart Rate (BPM)
-                  </Label>
-                  <Input
-                    id="heartRate"
-                    type="number"
-                    placeholder="e.g., 72"
-                    min="40"
-                    max="200"
-                    value={formData.heartRate}
-                    onChange={(e) => handleInputChange('heartRate', e.target.value)}
-                    className="input-focus-teal"
-                    data-testid="input-heart-rate"
-                  />
-                </div>
+                    {/* Chest Pain Type */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <HeartPulse className="h-4 w-4 text-[#0D9488]" />
+                        Chest Pain Type
+                      </Label>
+                      <Select value={formData.cp} onValueChange={(v) => handleInputChange('cp', v)}>
+                        <SelectTrigger data-testid="input-cp">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Typical Angina</SelectItem>
+                          <SelectItem value="1">Atypical Angina</SelectItem>
+                          <SelectItem value="2">Non-anginal Pain</SelectItem>
+                          <SelectItem value="3">Asymptomatic</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* BMI */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="bmi" className="flex items-center gap-2 text-sm font-medium">
-                    <Scale className="h-4 w-4 text-[#0D9488]" />
-                    BMI (Body Mass Index)
-                  </Label>
-                  <Input
-                    id="bmi"
-                    type="number"
-                    step="0.1"
-                    placeholder="e.g., 24.5"
-                    min="10"
-                    max="60"
-                    value={formData.bmi}
-                    onChange={(e) => handleInputChange('bmi', e.target.value)}
-                    className="input-focus-teal max-w-md"
-                    data-testid="input-bmi"
-                  />
-                </div>
-              </div>
+                    {/* Resting Blood Pressure */}
+                    <div className="space-y-2">
+                      <Label htmlFor="trestbps" className="flex items-center gap-2 text-sm font-medium">
+                        <Gauge className="h-4 w-4 text-[#0D9488]" />
+                        Resting BP (mmHg)
+                      </Label>
+                      <Input
+                        id="trestbps"
+                        type="number"
+                        placeholder="e.g., 120"
+                        min="50"
+                        max="300"
+                        value={formData.trestbps}
+                        onChange={(e) => handleInputChange('trestbps', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-trestbps"
+                        required
+                      />
+                    </div>
+
+                    {/* Serum Cholesterol */}
+                    <div className="space-y-2">
+                      <Label htmlFor="chol" className="flex items-center gap-2 text-sm font-medium">
+                        <Droplets className="h-4 w-4 text-[#0D9488]" />
+                        Serum Cholesterol (mg/dl)
+                      </Label>
+                      <Input
+                        id="chol"
+                        type="number"
+                        placeholder="e.g., 200"
+                        min="100"
+                        max="600"
+                        value={formData.chol}
+                        onChange={(e) => handleInputChange('chol', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-chol"
+                        required
+                      />
+                    </div>
+
+                    {/* Fasting Blood Sugar */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Droplets className="h-4 w-4 text-[#0D9488]" />
+                        Fasting Blood Sugar {'>'}120 mg/dl
+                      </Label>
+                      <Select value={formData.fbs} onValueChange={(v) => handleInputChange('fbs', v)}>
+                        <SelectTrigger data-testid="input-fbs">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No</SelectItem>
+                          <SelectItem value="1">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Resting ECG */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Activity className="h-4 w-4 text-[#0D9488]" />
+                        Resting ECG Results
+                      </Label>
+                      <Select value={formData.restecg} onValueChange={(v) => handleInputChange('restecg', v)}>
+                        <SelectTrigger data-testid="input-restecg">
+                          <SelectValue placeholder="Select result" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Normal</SelectItem>
+                          <SelectItem value="1">ST-T abnormality</SelectItem>
+                          <SelectItem value="2">LV hypertrophy</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Maximum Heart Rate */}
+                    <div className="space-y-2">
+                      <Label htmlFor="thalach" className="flex items-center gap-2 text-sm font-medium">
+                        <HeartPulse className="h-4 w-4 text-[#0D9488]" />
+                        Max Heart Rate (BPM)
+                      </Label>
+                      <Input
+                        id="thalach"
+                        type="number"
+                        placeholder="e.g., 150"
+                        min="50"
+                        max="250"
+                        value={formData.thalach}
+                        onChange={(e) => handleInputChange('thalach', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-thalach"
+                        required
+                      />
+                    </div>
+
+                    {/* Exercise Induced Angina */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Activity className="h-4 w-4 text-[#0D9488]" />
+                        Exercise Induced Angina
+                      </Label>
+                      <Select value={formData.exang} onValueChange={(v) => handleInputChange('exang', v)}>
+                        <SelectTrigger data-testid="input-exang">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No</SelectItem>
+                          <SelectItem value="1">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Oldpeak */}
+                    <div className="space-y-2">
+                      <Label htmlFor="oldpeak" className="flex items-center gap-2 text-sm font-medium">
+                        <Activity className="h-4 w-4 text-[#0D9488]" />
+                        ST Depression (oldpeak)
+                      </Label>
+                      <Input
+                        id="oldpeak"
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g., 1.5"
+                        min="0"
+                        max="10"
+                        value={formData.oldpeak}
+                        onChange={(e) => handleInputChange('oldpeak', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-oldpeak"
+                        required
+                      />
+                    </div>
+
+                    {/* Slope */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Activity className="h-4 w-4 text-[#0D9488]" />
+                        ST Segment Slope
+                      </Label>
+                      <Select value={formData.slope} onValueChange={(v) => handleInputChange('slope', v)}>
+                        <SelectTrigger data-testid="input-slope">
+                          <SelectValue placeholder="Select slope" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Upsloping</SelectItem>
+                          <SelectItem value="1">Flat</SelectItem>
+                          <SelectItem value="2">Downsloping</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Number of Major Vessels */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Heart className="h-4 w-4 text-[#0D9488]" />
+                        Major Vessels (0-4)
+                      </Label>
+                      <Select value={formData.ca} onValueChange={(v) => handleInputChange('ca', v)}>
+                        <SelectTrigger data-testid="input-ca">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">0</SelectItem>
+                          <SelectItem value="1">1</SelectItem>
+                          <SelectItem value="2">2</SelectItem>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="4">4</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Thalassemia */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Droplets className="h-4 w-4 text-[#0D9488]" />
+                        Thalassemia
+                      </Label>
+                      <Select value={formData.thal} onValueChange={(v) => handleInputChange('thal', v)}>
+                        <SelectTrigger data-testid="input-thal">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Normal</SelectItem>
+                          <SelectItem value="1">Fixed Defect</SelectItem>
+                          <SelectItem value="2">Reversible Defect</SelectItem>
+                          <SelectItem value="3">Not Described</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Lifestyle & Vitals Tab */}
+                <TabsContent value="lifestyle" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Gender */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <User className="h-4 w-4 text-[#0D9488]" />
+                        Gender
+                      </Label>
+                      <Select value={formData.gender} onValueChange={(v) => handleInputChange('gender', v)}>
+                        <SelectTrigger data-testid="input-gender">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Female</SelectItem>
+                          <SelectItem value="1">Male</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* BMI */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bmi" className="flex items-center gap-2 text-sm font-medium">
+                        <Scale className="h-4 w-4 text-[#0D9488]" />
+                        BMI
+                      </Label>
+                      <Input
+                        id="bmi"
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g., 24.5"
+                        min="10"
+                        max="60"
+                        value={formData.bmi}
+                        onChange={(e) => handleInputChange('bmi', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-bmi"
+                        required
+                      />
+                    </div>
+
+                    {/* Daily Steps */}
+                    <div className="space-y-2">
+                      <Label htmlFor="daily_steps" className="flex items-center gap-2 text-sm font-medium">
+                        <Footprints className="h-4 w-4 text-[#0D9488]" />
+                        Daily Steps
+                      </Label>
+                      <Input
+                        id="daily_steps"
+                        type="number"
+                        placeholder="e.g., 8000"
+                        min="0"
+                        max="50000"
+                        value={formData.daily_steps}
+                        onChange={(e) => handleInputChange('daily_steps', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-daily-steps"
+                        required
+                      />
+                    </div>
+
+                    {/* Sleep Hours */}
+                    <div className="space-y-2">
+                      <Label htmlFor="sleep_hours" className="flex items-center gap-2 text-sm font-medium">
+                        <Moon className="h-4 w-4 text-[#0D9488]" />
+                        Sleep Hours
+                      </Label>
+                      <Input
+                        id="sleep_hours"
+                        type="number"
+                        step="0.5"
+                        placeholder="e.g., 7"
+                        min="0"
+                        max="24"
+                        value={formData.sleep_hours}
+                        onChange={(e) => handleInputChange('sleep_hours', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-sleep-hours"
+                        required
+                      />
+                    </div>
+
+                    {/* Water Intake */}
+                    <div className="space-y-2">
+                      <Label htmlFor="water_intake_l" className="flex items-center gap-2 text-sm font-medium">
+                        <GlassWater className="h-4 w-4 text-[#0D9488]" />
+                        Water Intake (L/day)
+                      </Label>
+                      <Input
+                        id="water_intake_l"
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g., 2.5"
+                        min="0"
+                        max="10"
+                        value={formData.water_intake_l}
+                        onChange={(e) => handleInputChange('water_intake_l', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-water-intake"
+                        required
+                      />
+                    </div>
+
+                    {/* Calories Consumed */}
+                    <div className="space-y-2">
+                      <Label htmlFor="calories_consumed" className="flex items-center gap-2 text-sm font-medium">
+                        <Flame className="h-4 w-4 text-[#0D9488]" />
+                        Calories/Day
+                      </Label>
+                      <Input
+                        id="calories_consumed"
+                        type="number"
+                        placeholder="e.g., 2000"
+                        min="500"
+                        max="10000"
+                        value={formData.calories_consumed}
+                        onChange={(e) => handleInputChange('calories_consumed', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-calories"
+                        required
+                      />
+                    </div>
+
+                    {/* Smoker */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Cigarette className="h-4 w-4 text-[#0D9488]" />
+                        Smoker
+                      </Label>
+                      <Select value={formData.smoker} onValueChange={(v) => handleInputChange('smoker', v)}>
+                        <SelectTrigger data-testid="input-smoker">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No</SelectItem>
+                          <SelectItem value="1">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Alcohol */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Wine className="h-4 w-4 text-[#0D9488]" />
+                        Alcohol Consumption
+                      </Label>
+                      <Select value={formData.alcohol} onValueChange={(v) => handleInputChange('alcohol', v)}>
+                        <SelectTrigger data-testid="input-alcohol">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No</SelectItem>
+                          <SelectItem value="1">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Resting Heart Rate */}
+                    <div className="space-y-2">
+                      <Label htmlFor="resting_hr" className="flex items-center gap-2 text-sm font-medium">
+                        <HeartPulse className="h-4 w-4 text-[#0D9488]" />
+                        Resting Heart Rate
+                      </Label>
+                      <Input
+                        id="resting_hr"
+                        type="number"
+                        placeholder="e.g., 72"
+                        min="40"
+                        max="200"
+                        value={formData.resting_hr}
+                        onChange={(e) => handleInputChange('resting_hr', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-resting-hr"
+                        required
+                      />
+                    </div>
+
+                    {/* Systolic BP */}
+                    <div className="space-y-2">
+                      <Label htmlFor="systolic_bp" className="flex items-center gap-2 text-sm font-medium">
+                        <Gauge className="h-4 w-4 text-[#0D9488]" />
+                        Systolic BP (mmHg)
+                      </Label>
+                      <Input
+                        id="systolic_bp"
+                        type="number"
+                        placeholder="e.g., 120"
+                        min="70"
+                        max="250"
+                        value={formData.systolic_bp}
+                        onChange={(e) => handleInputChange('systolic_bp', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-systolic-bp"
+                        required
+                      />
+                    </div>
+
+                    {/* Diastolic BP */}
+                    <div className="space-y-2">
+                      <Label htmlFor="diastolic_bp" className="flex items-center gap-2 text-sm font-medium">
+                        <Gauge className="h-4 w-4 text-[#0D9488]" />
+                        Diastolic BP (mmHg)
+                      </Label>
+                      <Input
+                        id="diastolic_bp"
+                        type="number"
+                        placeholder="e.g., 80"
+                        min="40"
+                        max="150"
+                        value={formData.diastolic_bp}
+                        onChange={(e) => handleInputChange('diastolic_bp', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-diastolic-bp"
+                        required
+                      />
+                    </div>
+
+                    {/* Cholesterol Level */}
+                    <div className="space-y-2">
+                      <Label htmlFor="cholesterol_level" className="flex items-center gap-2 text-sm font-medium">
+                        <Droplets className="h-4 w-4 text-[#0D9488]" />
+                        Cholesterol Level (mg/dl)
+                      </Label>
+                      <Input
+                        id="cholesterol_level"
+                        type="number"
+                        placeholder="e.g., 200"
+                        min="100"
+                        max="600"
+                        value={formData.cholesterol_level}
+                        onChange={(e) => handleInputChange('cholesterol_level', e.target.value)}
+                        className="input-focus-teal"
+                        data-testid="input-cholesterol-level"
+                        required
+                      />
+                    </div>
+
+                    {/* Family History */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Users className="h-4 w-4 text-[#0D9488]" />
+                        Family History
+                      </Label>
+                      <Select value={formData.family_history} onValueChange={(v) => handleInputChange('family_history', v)}>
+                        <SelectTrigger data-testid="input-family-history">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No</SelectItem>
+                          <SelectItem value="1">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="mt-8 flex justify-center">
                 <Button 
@@ -291,9 +712,19 @@ const HealthInputForm = ({ formData, setFormData, onSubmit }) => {
                   size="lg"
                   className="bg-[#0D9488] hover:bg-[#0F766E] text-white px-12"
                   data-testid="predict-risk-btn"
+                  disabled={isLoading}
                 >
-                  <Heart className="h-5 w-5 mr-2 animate-heartbeat" />
-                  Predict Risk
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Heart className="h-5 w-5 mr-2 animate-heartbeat" />
+                      Predict Risk
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
@@ -358,7 +789,6 @@ const ImageUploadSection = ({ imagePreview, setImagePreview }) => {
 
         <Card className="max-w-2xl mx-auto shadow-lg border-0" data-testid="image-upload-card">
           <CardContent className="p-6 md:p-8">
-            {/* Upload Area */}
             <div
               className={`upload-area rounded-2xl p-8 text-center cursor-pointer relative overflow-hidden ${isDragging ? 'dragging' : ''}`}
               onDragOver={handleDragOver}
@@ -386,7 +816,6 @@ const ImageUploadSection = ({ imagePreview, setImagePreview }) => {
               )}
             </div>
 
-            {/* Hidden File Inputs */}
             <input
               ref={fileInputRef}
               type="file"
@@ -405,7 +834,6 @@ const ImageUploadSection = ({ imagePreview, setImagePreview }) => {
               data-testid="camera-input"
             />
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <Button
                 variant="outline"
@@ -461,13 +889,11 @@ const ARVisualizationSection = () => {
           </p>
         </div>
 
-        {/* AR Container */}
         <div 
           className="ar-container aspect-video max-w-5xl mx-auto rounded-3xl shadow-2xl border border-slate-700"
           data-testid="ar-container"
         >
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            {/* Pulsing Heart Animation */}
             <div className="heart-pulse-container mb-6">
               <div className="heart-pulse-ring" />
               <div className="heart-pulse-ring" />
@@ -482,7 +908,6 @@ const ARVisualizationSection = () => {
               Unity WebGL / AR module will load here
             </p>
 
-            {/* Loading Indicators */}
             <div className="flex items-center gap-2 mt-6">
               <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse" />
               <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse animation-delay-200" />
@@ -490,14 +915,11 @@ const ARVisualizationSection = () => {
             </div>
           </div>
 
-          {/* Placeholder for Unity WebGL iframe */}
           <div 
             id="unity-container" 
             className="absolute inset-0 hidden"
             data-testid="unity-container"
-          >
-            {/* Unity WebGL build will be embedded here */}
-          </div>
+          />
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-4">
@@ -535,7 +957,6 @@ const PredictionResultsSection = ({ results, showResults }) => {
 
         {showResults ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto animate-fade-in-up">
-            {/* Risk Level - Large Card */}
             <Card className={`md:col-span-2 shadow-lg border-0 overflow-hidden ${results.riskLevel === 'low' ? 'risk-low' : results.riskLevel === 'moderate' ? 'risk-moderate' : 'risk-high'}`} data-testid="risk-level-card">
               <CardContent className="p-6 md:p-8">
                 <div className="flex items-center justify-between">
@@ -559,7 +980,6 @@ const PredictionResultsSection = ({ results, showResults }) => {
               </CardContent>
             </Card>
 
-            {/* Risk Probability */}
             <Card className="shadow-lg border-0 card-hover" data-testid="risk-probability-card">
               <CardContent className="p-6">
                 <p className="text-sm font-medium text-slate-500 mb-2">Risk Probability</p>
@@ -576,7 +996,6 @@ const PredictionResultsSection = ({ results, showResults }) => {
               </CardContent>
             </Card>
 
-            {/* Heart Health Status */}
             <Card className="md:col-span-3 shadow-lg border-0" data-testid="health-status-card">
               <CardContent className="p-6 md:p-8">
                 <div className="flex items-start gap-4">
@@ -593,6 +1012,28 @@ const PredictionResultsSection = ({ results, showResults }) => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Recommendations Card */}
+            {results.recommendations && results.recommendations.length > 0 && (
+              <Card className="md:col-span-3 shadow-lg border-0" data-testid="recommendations-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 text-[#0D9488]" />
+                    Personalized Recommendations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {results.recommendations.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-3 text-sm text-slate-600">
+                        <CheckCircle2 className="h-4 w-4 text-[#0D9488] mt-0.5 flex-shrink-0" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
         ) : (
           <Card className="max-w-2xl mx-auto shadow-lg border-0" data-testid="no-results-card">
@@ -610,7 +1051,7 @@ const PredictionResultsSection = ({ results, showResults }) => {
 };
 
 // Precautions Panel Section
-const PrecautionsSection = ({ showResults }) => {
+const PrecautionsSection = () => {
   const precautions = {
     mustDo: [
       "Schedule regular cardiovascular check-ups every 6 months",
@@ -645,7 +1086,6 @@ const PrecautionsSection = ({ showResults }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {/* Must Do */}
           <Card className="shadow-lg border-0 precaution-must-do card-hover" data-testid="must-do-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#EF4444]">
@@ -666,7 +1106,6 @@ const PrecautionsSection = ({ showResults }) => {
             </CardContent>
           </Card>
 
-          {/* Important */}
           <Card className="shadow-lg border-0 precaution-important card-hover" data-testid="important-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#EAB308]">
@@ -687,7 +1126,6 @@ const PrecautionsSection = ({ showResults }) => {
             </CardContent>
           </Card>
 
-          {/* For Better Results */}
           <Card className="shadow-lg border-0 precaution-better card-hover" data-testid="better-results-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#22C55E]">
@@ -725,10 +1163,6 @@ const AIAssistantSection = ({ healthData }) => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
@@ -737,7 +1171,6 @@ const AIAssistantSection = ({ healthData }) => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response (placeholder for actual API integration)
     setTimeout(() => {
       const aiResponse = generatePlaceholderResponse(inputMessage, healthData);
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
@@ -746,7 +1179,6 @@ const AIAssistantSection = ({ healthData }) => {
   };
 
   const generatePlaceholderResponse = (question, data) => {
-    // Placeholder responses - will be replaced with actual AI API
     const responses = [
       `Based on your health profile, maintaining a balanced diet and regular exercise routine is crucial. Your current metrics suggest ${data.age ? 'monitoring is important at your age' : 'we need more data for personalized advice'}.`,
       "Regular cardiovascular exercise, such as brisk walking or swimming, can significantly improve heart health. I recommend starting with 20-30 minutes, 3-4 times per week.",
@@ -776,19 +1208,17 @@ const AIAssistantSection = ({ healthData }) => {
         </div>
 
         <Card className="max-w-3xl mx-auto shadow-xl border-0 overflow-hidden" data-testid="chatbot-card">
-          {/* Chat Header */}
           <div className="bg-gradient-to-r from-[#0D9488] to-[#0F766E] p-4 flex items-center gap-3">
             <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center">
               <Bot className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">CardioVision Assistant</h3>
+              <h3 className="font-semibold text-white">WithLove Assistant</h3>
               <p className="text-white/70 text-sm">Powered by AI</p>
             </div>
             <Badge className="ml-auto bg-white/20 text-white hover:bg-white/30">Online</Badge>
           </div>
 
-          {/* Chat Messages */}
           <ScrollArea className="h-80 md:h-96 p-4 chat-container" data-testid="chat-messages">
             <div className="space-y-4">
               {messages.map((message, index) => (
@@ -821,7 +1251,6 @@ const AIAssistantSection = ({ healthData }) => {
             </div>
           </ScrollArea>
 
-          {/* Chat Input */}
           <div className="p-4 border-t border-slate-100 bg-white">
             <div className="chat-input-container flex items-center gap-2 p-2 rounded-xl">
               <Input
@@ -857,25 +1286,22 @@ const Footer = () => {
     <footer className="py-12 border-t border-slate-200 footer-gradient" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo & Description */}
           <div className="flex items-center gap-3">
             <Heart className="h-6 w-6 text-[#EF4444] animate-heartbeat" />
             <div>
-              <h3 className="font-semibold text-[#0F172A]">CardioVision AI</h3>
+              <h3 className="font-semibold text-[#0F172A]">WithLove</h3>
               <p className="text-sm text-slate-500">AI + AR Healthcare Monitoring System</p>
             </div>
           </div>
 
-          {/* Links */}
           <nav className="flex flex-wrap items-center justify-center gap-6 text-sm">
             <a href="#" className="text-slate-600 hover:text-[#0D9488] transition-colors" data-testid="footer-privacy">Privacy Policy</a>
             <a href="#" className="text-slate-600 hover:text-[#0D9488] transition-colors" data-testid="footer-terms">Terms of Service</a>
             <a href="#" className="text-slate-600 hover:text-[#0D9488] transition-colors" data-testid="footer-contact">Contact</a>
           </nav>
 
-          {/* Copyright */}
           <p className="text-sm text-slate-500" data-testid="footer-copyright">
-            © 2026 CardioVision AI. All rights reserved.
+            © 2026 WithLove. All rights reserved.
           </p>
         </div>
       </div>
@@ -886,71 +1312,158 @@ const Footer = () => {
 // Main App Component
 function App() {
   const [formData, setFormData] = useState({
+    // Clinical parameters
     age: '',
-    bloodPressure: '',
-    cholesterol: '',
-    heartRate: '',
-    bmi: ''
+    sex: '',
+    cp: '',
+    trestbps: '',
+    chol: '',
+    fbs: '',
+    restecg: '',
+    thalach: '',
+    exang: '',
+    oldpeak: '',
+    slope: '',
+    ca: '',
+    thal: '',
+    // Lifestyle parameters
+    gender: '',
+    bmi: '',
+    daily_steps: '',
+    sleep_hours: '',
+    water_intake_l: '',
+    calories_consumed: '',
+    smoker: '',
+    alcohol: '',
+    resting_hr: '',
+    systolic_bp: '',
+    diastolic_bp: '',
+    cholesterol_level: '',
+    family_history: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState({
     riskLevel: 'low',
     probability: 0,
     description: '',
-    healthStatus: ''
+    healthStatus: '',
+    recommendations: []
   });
 
-  const handlePredictRisk = () => {
-    // Placeholder prediction logic - will be replaced with actual API call
-    const age = parseInt(formData.age) || 35;
-    const bp = parseInt(formData.bloodPressure) || 120;
-    const cholesterol = parseInt(formData.cholesterol) || 180;
-    const heartRate = parseInt(formData.heartRate) || 72;
-    const bmi = parseFloat(formData.bmi) || 24;
+  const handlePredictRisk = async () => {
+    setIsLoading(true);
+    
+    try {
+      const payload = {
+        age: parseFloat(formData.age) || 55,
+        sex: parseInt(formData.sex) || 1,
+        cp: parseInt(formData.cp) || 0,
+        trestbps: parseFloat(formData.trestbps) || 120,
+        chol: parseFloat(formData.chol) || 200,
+        fbs: parseInt(formData.fbs) || 0,
+        restecg: parseInt(formData.restecg) || 0,
+        thalach: parseFloat(formData.thalach) || 150,
+        exang: parseInt(formData.exang) || 0,
+        oldpeak: parseFloat(formData.oldpeak) || 1.0,
+        slope: parseInt(formData.slope) || 1,
+        ca: parseInt(formData.ca) || 0,
+        thal: parseInt(formData.thal) || 2,
+        gender: parseInt(formData.gender) || parseInt(formData.sex) || 1,
+        bmi: parseFloat(formData.bmi) || 24.5,
+        daily_steps: parseInt(formData.daily_steps) || 5000,
+        sleep_hours: parseFloat(formData.sleep_hours) || 7,
+        water_intake_l: parseFloat(formData.water_intake_l) || 2.0,
+        calories_consumed: parseInt(formData.calories_consumed) || 2000,
+        smoker: parseInt(formData.smoker) || 0,
+        alcohol: parseInt(formData.alcohol) || 0,
+        resting_hr: parseInt(formData.resting_hr) || 72,
+        systolic_bp: parseInt(formData.systolic_bp) || parseInt(formData.trestbps) || 120,
+        diastolic_bp: parseInt(formData.diastolic_bp) || 80,
+        cholesterol_level: parseFloat(formData.cholesterol_level) || parseFloat(formData.chol) || 200,
+        family_history: parseInt(formData.family_history) || 0,
+        disease_risk: 0
+      };
 
-    // Simple risk calculation placeholder - base score of 15
-    let riskScore = 15;
-    if (age > 45) riskScore += 20;
-    if (age > 60) riskScore += 15;
-    if (bp > 140) riskScore += 25;
-    if (bp > 120 && bp <= 140) riskScore += 10;
-    if (cholesterol > 240) riskScore += 20;
-    if (cholesterol > 200 && cholesterol <= 240) riskScore += 10;
-    if (heartRate > 100 || heartRate < 50) riskScore += 15;
-    if (bmi > 30) riskScore += 15;
-    if (bmi > 25 && bmi <= 30) riskScore += 8;
+      const response = await axios.post(`${API}/predict`, payload);
+      const data = response.data;
 
-    let riskLevel = 'low';
-    let description = '';
-    let healthStatus = '';
+      let description = '';
+      if (data.risk_level === 'low') {
+        description = 'Your cardiovascular risk is within the healthy range.';
+      } else if (data.risk_level === 'moderate') {
+        description = 'Some risk factors detected. Consider lifestyle modifications.';
+      } else {
+        description = 'Elevated risk detected. Medical consultation recommended.';
+      }
 
-    if (riskScore < 30) {
-      riskLevel = 'low';
-      description = 'Your cardiovascular risk is within the healthy range.';
-      healthStatus = 'Your heart health indicators are generally positive. Continue maintaining a healthy lifestyle with regular exercise and balanced nutrition.';
-    } else if (riskScore < 60) {
-      riskLevel = 'moderate';
-      description = 'Some risk factors detected. Consider lifestyle modifications.';
-      healthStatus = 'Your assessment shows moderate cardiovascular risk. We recommend consulting with your healthcare provider and implementing the suggested precautions.';
-    } else {
-      riskLevel = 'high';
-      description = 'Elevated risk detected. Medical consultation recommended.';
-      healthStatus = 'Your risk assessment indicates elevated cardiovascular concerns. Please schedule an appointment with a cardiologist for comprehensive evaluation and personalized treatment plan.';
+      setResults({
+        riskLevel: data.risk_level,
+        probability: data.probability,
+        description: description,
+        healthStatus: data.health_status,
+        recommendations: data.recommendations || []
+      });
+      setShowResults(true);
+
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+    } catch (error) {
+      console.error('Prediction error:', error);
+      // Fallback to local calculation if API fails
+      const age = parseInt(formData.age) || 35;
+      const bp = parseInt(formData.trestbps) || 120;
+      const cholesterol = parseInt(formData.chol) || 180;
+      const bmi = parseFloat(formData.bmi) || 24;
+      const smoker = parseInt(formData.smoker) || 0;
+
+      let riskScore = 15;
+      if (age > 45) riskScore += 20;
+      if (age > 60) riskScore += 15;
+      if (bp > 140) riskScore += 25;
+      if (bp > 120 && bp <= 140) riskScore += 10;
+      if (cholesterol > 240) riskScore += 20;
+      if (cholesterol > 200 && cholesterol <= 240) riskScore += 10;
+      if (bmi > 30) riskScore += 15;
+      if (bmi > 25 && bmi <= 30) riskScore += 8;
+      if (smoker === 1) riskScore += 20;
+
+      let riskLevel = 'low';
+      let description = '';
+      let healthStatus = '';
+
+      if (riskScore < 30) {
+        riskLevel = 'low';
+        description = 'Your cardiovascular risk is within the healthy range.';
+        healthStatus = 'Your heart health indicators are generally positive. Continue maintaining a healthy lifestyle.';
+      } else if (riskScore < 60) {
+        riskLevel = 'moderate';
+        description = 'Some risk factors detected. Consider lifestyle modifications.';
+        healthStatus = 'Your assessment shows moderate cardiovascular risk. We recommend consulting with your healthcare provider.';
+      } else {
+        riskLevel = 'high';
+        description = 'Elevated risk detected. Medical consultation recommended.';
+        healthStatus = 'Your risk assessment indicates elevated cardiovascular concerns. Please schedule an appointment with a cardiologist.';
+      }
+
+      setResults({
+        riskLevel,
+        probability: Math.min(riskScore, 95),
+        description,
+        healthStatus,
+        recommendations: []
+      });
+      setShowResults(true);
+
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } finally {
+      setIsLoading(false);
     }
-
-    setResults({
-      riskLevel,
-      probability: Math.min(riskScore, 95),
-      description,
-      healthStatus
-    });
-    setShowResults(true);
-
-    // Scroll to results
-    setTimeout(() => {
-      document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
   };
 
   return (
@@ -961,7 +1474,8 @@ function App() {
         <HealthInputForm 
           formData={formData} 
           setFormData={setFormData} 
-          onSubmit={handlePredictRisk} 
+          onSubmit={handlePredictRisk}
+          isLoading={isLoading}
         />
         <ImageUploadSection 
           imagePreview={imagePreview} 
@@ -972,7 +1486,7 @@ function App() {
           results={results} 
           showResults={showResults} 
         />
-        <PrecautionsSection showResults={showResults} />
+        <PrecautionsSection />
         <AIAssistantSection healthData={formData} />
       </main>
       <Footer />
