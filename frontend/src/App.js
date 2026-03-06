@@ -903,20 +903,23 @@ function App() {
 
   const handlePredictRisk = () => {
     // Placeholder prediction logic - will be replaced with actual API call
-    const age = parseInt(formData.age) || 0;
-    const bp = parseInt(formData.bloodPressure) || 0;
-    const cholesterol = parseInt(formData.cholesterol) || 0;
-    const heartRate = parseInt(formData.heartRate) || 0;
-    const bmi = parseFloat(formData.bmi) || 0;
+    const age = parseInt(formData.age) || 35;
+    const bp = parseInt(formData.bloodPressure) || 120;
+    const cholesterol = parseInt(formData.cholesterol) || 180;
+    const heartRate = parseInt(formData.heartRate) || 72;
+    const bmi = parseFloat(formData.bmi) || 24;
 
-    // Simple risk calculation placeholder
-    let riskScore = 0;
+    // Simple risk calculation placeholder - base score of 15
+    let riskScore = 15;
     if (age > 45) riskScore += 20;
     if (age > 60) riskScore += 15;
     if (bp > 140) riskScore += 25;
+    if (bp > 120 && bp <= 140) riskScore += 10;
     if (cholesterol > 240) riskScore += 20;
+    if (cholesterol > 200 && cholesterol <= 240) riskScore += 10;
     if (heartRate > 100 || heartRate < 50) riskScore += 15;
     if (bmi > 30) riskScore += 15;
+    if (bmi > 25 && bmi <= 30) riskScore += 8;
 
     let riskLevel = 'low';
     let description = '';
