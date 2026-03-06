@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 import pickle
 import numpy as np
 import os
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -80,6 +83,17 @@ class PredictionResponse(BaseModel):
     recommendations: list
 
 
+class ChatMessage(BaseModel):
+    message: str
+    session_id: str = "default"
+    health_context: Optional[dict] = None
+
+
+class ChatResponse(BaseModel):
+    response: str
+    session_id: str
+
+
 def load_model():
     global model
     if os.path.exists(MODEL_PATH):
@@ -139,12 +153,11 @@ def get_recommendations(risk_level: str, data: HealthData) -> list:
     if data.family_history == 1:
         recommendations.append("Regular screenings are important given your family history")
     
-    # Add general recommendations
     if len(recommendations) < 3:
         recommendations.append("Maintain regular cardiovascular check-ups every 6 months")
         recommendations.append("Continue heart-healthy habits like regular exercise")
     
-    return recommendations[:6]  # Return max 6 recommendations
+    return recommendations[:6]
 
 
 @app.on_event("startup")
@@ -170,7 +183,6 @@ async def predict_risk(data: HealthData):
             raise HTTPException(status_code=500, detail="Model not loaded")
     
     try:
-        # Build feature array in the exact order expected by the model
         features = {
             'age': data.age,
             'sex': data.sex,
@@ -185,7 +197,7 @@ async def predict_risk(data: HealthData):
             'slope': data.slope,
             'ca': data.ca,
             'thal': data.thal,
-            'age.1': data.age,  # Use age as age.1
+            'age.1': data.age,
             'gender': data.gender,
             'bmi': data.bmi,
             'daily_steps': data.daily_steps,
@@ -202,24 +214,18 @@ async def predict_risk(data: HealthData):
             'disease_risk': data.disease_risk
         }
         
-        # Create numpy array in correct order
         X = np.array([[features[name] for name in FEATURE_NAMES]], dtype=np.float64)
-        
-        # Get prediction probability
         proba = model.predict_proba(X)
         probability = float(proba[0, 1]) if proba.shape[1] == 2 else float(proba[0].max())
         
-        # Classify risk
         risk_level, health_status = classify_risk(probability)
-        
-        # Get personalized recommendations
         recommendations = get_recommendations(risk_level, data)
         
         log.info(f"Prediction: risk={risk_level}, probability={probability:.4f}")
         
         return PredictionResponse(
             risk_level=risk_level,
-            probability=round(probability * 100, 2),  # Convert to percentage
+            probability=round(probability * 100, 2),
             health_status=health_status,
             recommendations=recommendations
         )
@@ -227,6 +233,76 @@ async def predict_risk(data: HealthData):
     except Exception as e:
         log.error(f"Prediction error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_with_assistant(chat_data: ChatMessage):
+    """Chat with AI health assistant powered by GPT-4o."""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="LLM API key not configured")
+        
+        # Build context-aware system message
+        system_message = """You are WithLove AI Health Assistant, a knowledgeable and empathetic medical advisor specializing in cardiovascular health.
+
+Your role is to:
+- Answer questions about heart disease risk factors, prevention, and lifestyle advice
+- Explain medical terms in simple, easy-to-understand language
+- Provide evidence-based health recommendations
+- Be supportive and encouraging while being medically accurate
+
+Guidelines:
+- Keep responses concise (2-4 sentences when possible)
+- Use bullet points for lists
+- Always recommend consulting a healthcare professional for specific medical decisions
+- Never diagnose conditions - only provide educational information
+- Be warm and supportive in tone"""
+        
+        # Add health context if provided
+        if chat_data.health_context:
+            ctx = chat_data.health_context
+            context_info = f"""
+
+Current User Health Profile:
+- Risk Level: {ctx.get('risk_level', 'Unknown')}
+- Risk Probability: {ctx.get('probability', 'Unknown')}%
+- Age: {ctx.get('age', 'Unknown')}
+- BMI: {ctx.get('bmi', 'Unknown')}
+- Blood Pressure: {ctx.get('systolic_bp', 'Unknown')}/{ctx.get('diastolic_bp', 'Unknown')} mmHg
+- Cholesterol: {ctx.get('cholesterol', 'Unknown')} mg/dL
+- Smoker: {'Yes' if ctx.get('smoker') == 1 else 'No'}
+- Family History: {'Yes' if ctx.get('family_history') == 1 else 'No'}
+
+Use this context to provide personalized responses when relevant."""
+            system_message += context_info
+        
+        # Initialize chat with GPT-4o
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=chat_data.session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        # Send message and get response
+        user_message = UserMessage(text=chat_data.message)
+        response = await chat.send_message(user_message)
+        
+        log.info(f"Chat response generated for session: {chat_data.session_id}")
+        
+        return ChatResponse(
+            response=response,
+            session_id=chat_data.session_id
+        )
+        
+    except ImportError as e:
+        log.error(f"Import error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Chat service not available - missing dependencies")
+    except Exception as e:
+        log.error(f"Chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
 
 
 @app.get("/api/feature-info")

@@ -189,6 +189,38 @@ class WithLoveAPITester:
         
         return self.run_test("Invalid Data Validation", "POST", "/api/predict", 422, invalid_data)
 
+    def test_chatgpt_integration(self):
+        """Test ChatGPT integration endpoint"""
+        chat_data = {
+            "message": "What does my moderate risk level mean?",
+            "session_id": "test_session_123",
+            "health_context": {
+                "risk_level": "moderate",
+                "probability": 58,
+                "age": 55,
+                "bmi": 28.5,
+                "systolic_bp": 145,
+                "diastolic_bp": 92,
+                "cholesterol": 230,
+                "smoker": 1,
+                "family_history": 1
+            }
+        }
+        
+        success, response = self.run_test(
+            "ChatGPT Integration", 
+            "POST", 
+            "/api/chat", 
+            200, 
+            chat_data
+        )
+        
+        if success:
+            print(f"🤖 AI Response: {response.get('response', 'No response')[:100]}...")
+            print(f"📋 Session ID: {response.get('session_id', 'Unknown')}")
+        
+        return success, response
+
 def main():
     print("🔬 Starting WithLove API Testing Suite")
     print("=" * 60)
@@ -203,7 +235,8 @@ def main():
         tester.test_predict_all_parameters,
         tester.test_predict_low_risk,
         tester.test_predict_high_risk,
-        tester.test_invalid_data
+        tester.test_invalid_data,
+        tester.test_chatgpt_integration
     ]
     
     failed_tests = []

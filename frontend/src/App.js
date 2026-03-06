@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "@/App.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
@@ -875,8 +875,39 @@ const ImageUploadSection = ({ imagePreview, setImagePreview }) => {
   );
 };
 
-// AR Heart Visualization Section
-const ARVisualizationSection = () => {
+// AR Heart Visualization Section with CSS-based Heart Animation
+const ARVisualizationSection = ({ riskPercentage = 25 }) => {
+  // Determine heart color and animation speed based on risk
+  const getHeartStyles = () => {
+    if (riskPercentage <= 40) {
+      return {
+        color: '#22C55E',
+        glowColor: 'rgba(34, 197, 94, 0.4)',
+        animationDuration: '1.5s',
+        statusText: 'Healthy Heart',
+        statusColor: 'text-green-500'
+      };
+    } else if (riskPercentage <= 70) {
+      return {
+        color: '#EAB308',
+        glowColor: 'rgba(234, 179, 8, 0.4)',
+        animationDuration: '1s',
+        statusText: 'Moderate Risk',
+        statusColor: 'text-yellow-500'
+      };
+    } else {
+      return {
+        color: '#EF4444',
+        glowColor: 'rgba(239, 68, 68, 0.4)',
+        animationDuration: '0.6s',
+        statusText: 'High Risk',
+        statusColor: 'text-red-500'
+      };
+    }
+  };
+
+  const styles = getHeartStyles();
+
   return (
     <section id="visualization" className="py-16 md:py-24" data-testid="ar-visualization-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -885,46 +916,121 @@ const ARVisualizationSection = () => {
             AR Heart Visualization
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Immersive 3D heart model with real-time risk indicators powered by augmented reality technology.
+            Interactive heart model with real-time risk indicators. The heart color and beat speed change based on your risk level.
           </p>
         </div>
 
         <div 
-          className="ar-container aspect-video max-w-5xl mx-auto rounded-3xl shadow-2xl border border-slate-700"
+          className="aspect-video max-w-5xl mx-auto rounded-3xl shadow-2xl overflow-hidden relative"
+          style={{ background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)' }}
           data-testid="ar-container"
         >
+          {/* Grid Background */}
+          <div 
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+              backgroundSize: '32px 32px'
+            }}
+          />
+          
+          {/* Main Heart Visualization */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="heart-pulse-container mb-6">
-              <div className="heart-pulse-ring" />
-              <div className="heart-pulse-ring" />
-              <div className="heart-pulse-ring" />
-              <Heart className="h-24 w-24 md:h-32 md:w-32 text-[#EF4444] animate-heartbeat relative z-10" />
+            {/* Pulse Rings */}
+            <div className="relative">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    width: `${180 + i * 40}px`,
+                    height: `${180 + i * 40}px`,
+                    left: `${-(90 + i * 20)}px`,
+                    top: `${-(90 + i * 20)}px`,
+                    border: `2px solid ${styles.color}`,
+                    opacity: 0.3 - i * 0.08,
+                    animation: `pulse-ring ${styles.animationDuration} ease-in-out infinite`,
+                    animationDelay: `${i * 0.3}s`
+                  }}
+                />
+              ))}
+              
+              {/* Heart Icon with Glow */}
+              <div 
+                className="relative"
+                style={{
+                  filter: `drop-shadow(0 0 30px ${styles.glowColor}) drop-shadow(0 0 60px ${styles.glowColor})`
+                }}
+              >
+                <svg
+                  className="w-32 h-32 md:w-40 md:h-40"
+                  viewBox="0 0 24 24"
+                  fill={styles.color}
+                  style={{
+                    animation: `heartbeat ${styles.animationDuration} ease-in-out infinite`
+                  }}
+                  data-testid="animated-heart-svg"
+                >
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </div>
             </div>
             
-            <p className="text-white/80 text-lg font-medium mb-2" data-testid="ar-status-text">
-              Initializing AR Environment...
-            </p>
-            <p className="text-white/50 text-sm">
-              Unity WebGL / AR module will load here
-            </p>
-
-            <div className="flex items-center gap-2 mt-6">
-              <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse" />
-              <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse animation-delay-200" />
-              <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse animation-delay-400" />
+            {/* ECG Line Animation */}
+            <div className="absolute bottom-20 left-0 right-0 flex justify-center">
+              <svg className="w-full max-w-md h-16 opacity-60" viewBox="0 0 400 50">
+                <path
+                  d="M0,25 L80,25 L100,25 L110,10 L120,40 L130,25 L150,25 L200,25 L220,25 L230,5 L240,45 L250,25 L270,25 L320,25 L340,25 L350,10 L360,40 L370,25 L400,25"
+                  fill="none"
+                  stroke={styles.color}
+                  strokeWidth="2"
+                  className="ecg-line"
+                />
+              </svg>
             </div>
           </div>
-
-          <div 
-            id="unity-container" 
-            className="absolute inset-0 hidden"
-            data-testid="unity-container"
-          />
+          
+          {/* Status Overlay */}
+          <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2">
+            <p className="text-white/70 text-sm">Heart Risk Level</p>
+            <p className={`text-xl font-bold ${styles.statusColor}`} data-testid="ar-status-text">{styles.statusText}</p>
+            <p className="text-white/60 text-sm">{riskPercentage.toFixed(1)}% probability</p>
+          </div>
+          
+          {/* Legend */}
+          <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2 text-xs text-white/70">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-3 h-3 rounded-full bg-green-500"></span>
+              <span>0-40%: Low Risk</span>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+              <span>41-70%: Moderate</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500"></span>
+              <span>71-100%: High Risk</span>
+            </div>
+          </div>
+          
+          {/* Info */}
+          <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2 text-xs text-white/70">
+            <p>AR visualization placeholder</p>
+            <p className="text-white/50">Unity WebGL ready</p>
+          </div>
         </div>
 
-        <p className="text-center text-sm text-slate-500 mt-4">
-          AR visualization requires WebGL-enabled browser
-        </p>
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-sm text-slate-600">
+            <span className="font-medium">How it works:</span> Heart color changes from 
+            <span className="text-green-500 font-medium"> green </span>(healthy) to 
+            <span className="text-yellow-500 font-medium"> yellow </span>(moderate) to 
+            <span className="text-red-500 font-medium"> red </span>(high risk)
+          </p>
+          <p className="text-xs text-slate-500">
+            Heartbeat speed increases with risk level • Ready for Unity WebGL integration
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -1151,19 +1257,28 @@ const PrecautionsSection = () => {
   );
 };
 
-// AI Health Assistant (Chatbot) Section
-const AIAssistantSection = ({ healthData }) => {
+// AI Health Assistant (Chatbot) Section with ChatGPT Integration
+const AIAssistantSection = ({ healthData, results }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hello! I'm your AI Health Assistant. I can answer questions about your cardiovascular health, explain risk factors, and provide personalized recommendations. How can I help you today?"
+      content: "Hello! I'm your AI Health Assistant powered by GPT-4. I can answer questions about your cardiovascular health, explain risk factors, and provide personalized recommendations based on your health data. How can I help you today?"
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId] = useState(() => `session_${Date.now()}`);
   const messagesEndRef = useRef(null);
 
-  const handleSendMessage = () => {
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMessage = { role: 'user', content: inputMessage };
@@ -1171,21 +1286,40 @@ const AIAssistantSection = ({ healthData }) => {
     setInputMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiResponse = generatePlaceholderResponse(inputMessage, healthData);
-      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-      setIsTyping(false);
-    }, 1500);
-  };
+    try {
+      // Build health context for the AI
+      const healthContext = {
+        risk_level: results?.riskLevel || 'unknown',
+        probability: results?.probability || 0,
+        age: healthData?.age || null,
+        bmi: healthData?.bmi || null,
+        systolic_bp: healthData?.systolic_bp || null,
+        diastolic_bp: healthData?.diastolic_bp || null,
+        cholesterol: healthData?.cholesterol_level || null,
+        smoker: parseInt(healthData?.smoker) || 0,
+        family_history: parseInt(healthData?.family_history) || 0
+      };
 
-  const generatePlaceholderResponse = (question, data) => {
-    const responses = [
-      `Based on your health profile, maintaining a balanced diet and regular exercise routine is crucial. Your current metrics suggest ${data.age ? 'monitoring is important at your age' : 'we need more data for personalized advice'}.`,
-      "Regular cardiovascular exercise, such as brisk walking or swimming, can significantly improve heart health. I recommend starting with 20-30 minutes, 3-4 times per week.",
-      "Your question is important. While I provide general guidance, please consult with your healthcare provider for personalized medical advice tailored to your specific condition.",
-      "Heart health is influenced by many factors including diet, exercise, stress levels, and genetics. Let me help you understand how each of these affects your cardiovascular system."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+      const response = await axios.post(`${API}/chat`, {
+        message: inputMessage,
+        session_id: sessionId,
+        health_context: healthContext
+      });
+
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.data.response 
+      }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      // Fallback response if API fails
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I apologize, but I'm having trouble connecting to the AI service. Please try again in a moment. In the meantime, remember to consult with your healthcare provider for personalized medical advice." 
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -1195,15 +1329,31 @@ const AIAssistantSection = ({ healthData }) => {
     }
   };
 
+  // Quick action suggestions
+  const quickActions = [
+    "What does my risk level mean?",
+    "How can I lower my heart disease risk?",
+    "What lifestyle changes should I make?",
+    "Explain my results"
+  ];
+
+  const handleQuickAction = (action) => {
+    setInputMessage(action);
+  };
+
   return (
     <section id="assistant" className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50" data-testid="ai-assistant-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
+          <Badge className="mb-4 bg-[#CCFBF1] text-[#0D9488] hover:bg-[#CCFBF1]">
+            <Bot className="h-3 w-3 mr-1" />
+            Powered by GPT-4
+          </Badge>
           <h2 className="section-title text-2xl md:text-3xl font-bold text-[#0F172A] mb-4" data-testid="assistant-title">
             AI Health Assistant
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Get instant answers to your cardiovascular health questions from our AI-powered assistant.
+            Get instant, personalized answers to your cardiovascular health questions from our AI-powered assistant.
           </p>
         </div>
 
@@ -1214,9 +1364,12 @@ const AIAssistantSection = ({ healthData }) => {
             </div>
             <div>
               <h3 className="font-semibold text-white">WithLove Assistant</h3>
-              <p className="text-white/70 text-sm">Powered by AI</p>
+              <p className="text-white/70 text-sm">Powered by ChatGPT</p>
             </div>
-            <Badge className="ml-auto bg-white/20 text-white hover:bg-white/30">Online</Badge>
+            <Badge className="ml-auto bg-white/20 text-white hover:bg-white/30">
+              <span className="h-2 w-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+              Online
+            </Badge>
           </div>
 
           <ScrollArea className="h-80 md:h-96 p-4 chat-container" data-testid="chat-messages">
@@ -1232,7 +1385,7 @@ const AIAssistantSection = ({ healthData }) => {
                       message.role === 'user' ? 'chat-message-user' : 'chat-message-ai'
                     }`}
                   >
-                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   </div>
                 </div>
               ))}
@@ -1251,6 +1404,25 @@ const AIAssistantSection = ({ healthData }) => {
             </div>
           </ScrollArea>
 
+          {/* Quick Actions */}
+          {messages.length <= 2 && (
+            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50">
+              <p className="text-xs text-slate-500 mb-2">Quick questions:</p>
+              <div className="flex flex-wrap gap-2">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuickAction(action)}
+                    className="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-[#0D9488] hover:text-[#0D9488] transition-colors"
+                    data-testid={`quick-action-${index}`}
+                  >
+                    {action}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="p-4 border-t border-slate-100 bg-white">
             <div className="chat-input-container flex items-center gap-2 p-2 rounded-xl">
               <Input
@@ -1260,14 +1432,19 @@ const AIAssistantSection = ({ healthData }) => {
                 placeholder="Ask about your heart health..."
                 className="flex-1 border-0 shadow-none focus-visible:ring-0"
                 data-testid="chat-input"
+                disabled={isTyping}
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
+                disabled={!inputMessage.trim() || isTyping}
                 className="bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-lg"
                 data-testid="send-message-btn"
               >
-                <Send className="h-4 w-4" />
+                {isTyping ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <p className="text-xs text-slate-400 mt-2 text-center">
@@ -1481,13 +1658,13 @@ function App() {
           imagePreview={imagePreview} 
           setImagePreview={setImagePreview} 
         />
-        <ARVisualizationSection />
+        <ARVisualizationSection riskPercentage={showResults ? results.probability : 25} />
         <PredictionResultsSection 
           results={results} 
           showResults={showResults} 
         />
         <PrecautionsSection />
-        <AIAssistantSection healthData={formData} />
+        <AIAssistantSection healthData={formData} results={results} />
       </main>
       <Footer />
     </div>
