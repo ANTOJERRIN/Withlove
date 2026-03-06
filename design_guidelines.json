@@ -1,0 +1,179 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "CardioVision AI",
+      "archetype": "Clinical Clarity (Swiss + Organic)",
+      "tone": "Professional, Reassuring, Advanced, Precise",
+      "visual_mood": "Sterile cleanliness mixed with organic human warmth. High-contrast data visualization."
+    },
+    "typography": {
+      "headings": {
+        "family": "Outfit, sans-serif",
+        "weights": ["500", "700"],
+        "usage": "Use for all section titles and large metrics. Tight tracking (-0.02em)."
+      },
+      "body": {
+        "family": "Plus Jakarta Sans, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "Use for labels, inputs, and paragraphs. Excellent legibility for medical data."
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "main": "#0F172A",
+          "description": "Deep Slate Blue (Slate 900) - Used for primary text, strong borders, and footer."
+        },
+        "secondary": {
+          "main": "#0D9488",
+          "light": "#CCFBF1",
+          "description": "Surgical Teal (Teal 600) - Used for primary actions, success states, and brand accents. (Distinct from forbidden teal #1B93A4)."
+        },
+        "accent": {
+          "main": "#EF4444",
+          "soft": "#FEE2E2",
+          "description": "Pulse Red (Red 500) - Used strictly for 'Heartbeat' animations, high-risk warnings, and urgent CTAs."
+        },
+        "neutral": {
+          "bg": "#F8FAFC",
+          "surface": "#FFFFFF",
+          "border": "#E2E8F0"
+        },
+        "risk_levels": {
+          "low": "#22C55E",
+          "moderate": "#EAB308",
+          "high": "#EF4444"
+        }
+      },
+      "gradients": {
+        "hero_overlay": "linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(13, 148, 136, 0.1) 100%)",
+        "glass_surface": "rgba(255, 255, 255, 0.7)"
+      }
+    },
+    "layout": {
+      "grid_system": "Bento Grid (CSS Grid)",
+      "container_width": "max-w-7xl",
+      "spacing": {
+        "section_gap": "py-24",
+        "element_gap": "gap-6"
+      },
+      "radius": {
+        "default": "rounded-2xl",
+        "small": "rounded-lg"
+      }
+    },
+    "shadows": {
+      "card": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      "floating": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      "inner_glow": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)"
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "Hero/Consultation",
+        "url": "https://images.unsplash.com/photo-1659353888096-cc5e333db5e0?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Doctor consulting patient with modern tablet",
+        "usage": "Use in 'AI Chatbot' intro or 'About' section."
+      },
+      {
+        "category": "Precautions - Nutrition",
+        "url": "https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Healthy fresh vegetables and heart healthy food",
+        "usage": "Use for 'Dietary' precaution card."
+      },
+      {
+        "category": "Precautions - Lifestyle",
+        "url": "https://images.unsplash.com/photo-1632586402131-9f2723a8d5d9?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Active lifestyle walking",
+        "usage": "Use for 'Exercise' precaution card."
+      },
+      {
+        "category": "Technology/Abstract",
+        "url": "https://images.unsplash.com/photo-1560506967-f1afcf6100e8?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Abstract blue medical technology background",
+        "usage": "Use as a subtle background for the 'AR Visualization' placeholder."
+      }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "mapping": {
+        "heart_rate": "Activity",
+        "blood_pressure": "Gauge",
+        "cholesterol": "Droplets",
+        "bmi": "Scale",
+        "upload": "UploadCloud",
+        "camera": "Camera",
+        "robot": "Bot",
+        "check": "CheckCircle2",
+        "alert": "AlertTriangle",
+        "user": "User"
+      }
+    }
+  },
+  "components": {
+    "Header": {
+      "type": "Sticky Glass",
+      "classes": "sticky top-0 z-50 w-full border-b border-white/20 bg-white/80 backdrop-blur-xl",
+      "elements": ["Logo (Text + Pulse Icon)", "Nav Links (Hidden Mobile)", "Emergency CTA"]
+    },
+    "HealthForm": {
+      "type": "Split Card",
+      "layout": "grid grid-cols-1 md:grid-cols-2 gap-12",
+      "style": "Clean white card with floating labels or clear bold headings. No clutter.",
+      "inputs": ["Age", "Blood Pressure (Sys/Dia)", "Cholesterol Level", "Heart Rate (BPM)", "BMI"]
+    },
+    "AR_Container": {
+      "type": "Interactive Placeholder",
+      "style": "bg-slate-900 rounded-3xl relative overflow-hidden aspect-video border border-slate-700 shadow-2xl",
+      "overlay": "Grid overlay (CSS radial-gradient dots) to simulate 3D space.",
+      "text": "Waiting for Heart Data... / Initializing Unity WebGL..."
+    },
+    "Results": {
+      "type": "Bento Grid",
+      "layout": "grid grid-cols-1 md:grid-cols-3 gap-4",
+      "cards": [
+        "Risk Score (Big Card - col-span-2)",
+        "Key Metric 1 (Small)",
+        "Key Metric 2 (Small)",
+        "Detailed Breakdown (Long Card)"
+      ]
+    },
+    "Chatbot": {
+      "type": "Floating Assistant",
+      "style": "Fixed bottom-right or embedded section. Glassmorphism container.",
+      "ui": "ChatGPT-style input field with 'Send' button. Message bubbles with distinct colors (User: Gray, AI: Teal)."
+    }
+  },
+  "animations": {
+    "library": "framer-motion",
+    "required": [
+      {
+        "name": "Heartbeat",
+        "css": "@keyframes pulse-red { 0%, 100% { color: #EF4444; transform: scale(1); } 50% { color: #DC2626; transform: scale(1.1); } }",
+        "usage": "Apply to the Heart icon in the logo."
+      },
+      {
+        "name": "FadeInUp",
+        "props": "initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}",
+        "usage": "Apply to all major sections on scroll."
+      },
+      {
+        "name": "Scanning",
+        "css": "Linear gradient moving top to bottom over the image upload area.",
+        "usage": "Image Capture section."
+      }
+    ]
+  },
+  "universal_guidelines": [
+    "Do not use gradients for text.",
+    "Ensure all text has a contrast ratio of at least 4.5:1 against its background.",
+    "Use 'rem' for font sizes and spacing.",
+    "Avoid 'Inter' font for headings; use 'Outfit'.",
+    "Never use pure black (#000000); use Slate-900 (#0F172A).",
+    "All interactive elements must have a :hover and :focus state.",
+    "Use data-testid attributes for all inputs and buttons (e.g., 'submit-health-data').",
+    "Mobile First: Always write classes for mobile first (e.g., 'p-4 md:p-8').",
+    "No generic 'Lorem Ipsum' - use realistic medical placeholder text."
+  ]
+}
