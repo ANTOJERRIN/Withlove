@@ -1,16 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CardioRisk AI</title>
-        <style>
-            :root {
-                --green:#22C55E;
-                --amber:#F59E0B;
-                --red:#EF4444;
-                --glass:rgba(255,255,255,0.08);
-                
-            }
-        </style>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardioRisk AI</title>
+
+<style>
+:root{
+--green:#22C55E;
+--amber:#F59E0B;
+--red:#EF4444;
+--glass:rgba(255,255,255,0.08);
+--blur:blur(20px);
+--radius:16px;
+}
+
+*{
+box-sizing:border-box;
+font-family:Inter,system-ui;
+margin:0;
+padding:0;
+}
+
+body{
+background:linear-gradient(135deg,#0f172a,#020617);
+color:white;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:flex-start;
+overflow-x:hidden;
+}
+
+.hero{
+text-align:center;
+margin-top:40px;
+}
+
+.hero h1{
+font-size:38px;
+font-weight:700;
+margin-bottom:10px;
+letter-spacing:1px;
+}
+
+.hero p{
+opacity:.7;
+font-size:15px;
+}
+
+.heart{
+width:90px;
+height:90px;
+margin:20px auto;
+animation:beat 1.3s infinite;
+}
+
+@keyframes beat{
+0%{transform:scale(1)}
+25%{transform:scale(1.15)}
+40%{transform:scale(1)}
+60%{transform:scale(1.15)}
+100%{transform:scale(1)}
+}
+
+.container{
+width:92%;
+max-width:850px;
+background:var(--glass);
+backdrop-filter:var(--blur);
+border-radius:var(--radius);
+padding:30px;
+margin-top:30px;
+box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+
+.progress{
+height:8px;
+border-radius:10px;
+background:#1e293b;
+margin-bottom:25px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+transition:.4s;
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+}
+
+.input-group{
+position:relative;
+}
+
+.input-group input{
+width:100%;
+padding:14px;
+border:none;
+border-radius:10px;
+background:#0f172a;
+color:white;
+outline:none;
+}
+
+.input-group label{
+position:absolute;
+top:12px;
+left:14px;
+font-size:13px;
+opacity:.6;
+transition:.3s;
+pointer-events:none;
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown)+label{
+top:-8px;
+font-size:10px;
+opacity:1;
+}
+
+.submit-btn{
+margin-top:25px;
+width:100%;
+padding:16px;
+border:none;
+border-radius:12px;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+background:linear-gradient(135deg,#22c55e,#4ade80);
+color:black;
+transition:.2s;
+}
+
+.submit-btn:hover{
+transform:scale(1.02);
+}
+
+.result{
+margin-top:30px;
+display:none;
+text-align:center;
+}
+
+.badge{
+font-size:24px;
+font-weight:700;
+padding:12px 22px;
+border-radius:30px;
+display:inline-block;
+margin-bottom:20px;
+}
+
+.ekg{
+width:100%;
+height:60px;
+margin:20px 0;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:18px;
+margin-top:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+padding:18px;
+border-radius:14px;
+transition:.3s;
+transform-style:preserve-3d;
+}
+
+.card:hover{
+transform:rotateY(6deg) rotateX(6deg) scale(1.04);
+}
+
+.low{background:linear-gradient(135deg,#064e3b,#022c22)}
+.medium{background:linear-gradient(135deg,#7c2d12,#451a03)}
+.high{background:linear-gradient(135deg,#7f1d1d,#450a0a)}
+
+.footer{
+margin:40px 0;
+font-size:12px;
+opacity:.6;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+<div class="heart">
+<svg viewBox="0 0 32 29" fill="#EF4444">
+<path d="M23.6,0c-3.4,0-6.3,2.3-7.6,5.4C14.7,2.3,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4
+c0,9.3,16,20.6,16,20.6s16-11.3,16-20.6C32,3.8,28.2,0,23.6,0z"/>
+</svg>
+</div>
+<h1>CardioRisk AI</h1>
+<p>Smart Cardiac Risk Awareness Tool</p>
+</div>
+
+<div class="container">
+
+<div class="progress">
+<div class="progress-bar" id="progress"></div>
+</div>
+
+<form id="riskForm">
+
+<div class="form-grid">
+
+<div class="input-group">
+<input type="number" required placeholder=" " id="age">
+<label>Age</label>
+</div>
+
+<div class="input-group">
+<input type="number" required placeholder=" " id="bp">
+<label>Blood Pressure</label>
+</div>
+
+<div class="input-group">
+<input type="number" required placeholder=" " id="chol">
+<label>Cholesterol</label>
+</div>
+
+<div class="input-group">
+<input type="number" required placeholder=" " id="heartrate">
+<label>Heart Rate</label>
+</div>
+
+<div class="input-group">
+<input type="number" required placeholder=" " id="bmi">
+<label>BMI</label>
+</div>
+
+</div>
+
+<button class="submit-btn">Analyze Cardiac Risk</button>
+
+</form>
+
+<div class="result" id="result">
+
+<div class="badge" id="badge"></div>
+
+<svg class="ekg" viewBox="0 0 300 60">
+<polyline
+fill="none"
+stroke="white"
+stroke-width="3"
+points="0,30 40,30 50,10 60,50 70,30 300,30">
+<animate attributeName="points"
+dur="1s"
+repeatCount="indefinite"
+values="
+0,30 40,30 50,10 60,50 70,30 300,30;
+0,30 45,30 55,15 65,45 75,30 300,30;
+0,30 40,30 50,10 60,50 70,30 300,30"/>
+</polyline>
+</svg>
+
+<div class="cards" id="suggestions"></div>
+
+</div>
+
+</div>
+
+<div class="footer">
+Awareness tool only — consult physician for medical diagnosis.
+</div>
+
+<script>
+
+const form=document.getElementById("riskForm")
+const progress=document.getElementById("progress")
+
+const inputs=document.querySelectorAll("input")
+
+inputs.forEach(i=>{
+i.addEventListener("input",()=>{
+let filled=[...inputs].filter(x=>x.value).length
+progress.style.width=(filled/inputs.length*100)+"%"
+})
+})
+
+form.addEventListener("submit",async e=>{
+e.preventDefault()
+
+const data={
+age:age.value,
+bp:bp.value,
+chol:chol.value,
+heartrate:heartrate.value,
+bmi:bmi.value
+}
+
+let res=await fetch("/predict",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify(data)
+})
+
+let result=await res.json()
+
+showResult(result.risk)
+})
+
+function showResult(risk){
+
+let resultDiv=document.getElementById("result")
+let badge=document.getElementById("badge")
+let cards=document.getElementById("suggestions")
+
+resultDiv.style.display="block"
+
+cards.innerHTML=""
+
+if(risk=="low"){
+document.body.className="low"
+badge.innerText="LOW RISK"
+badge.style.background="#22C55E"
+
+cards.innerHTML=`
+<div class="card">🏃 Maintain Exercise</div>
+<div class="card">🥗 Balanced Diet</div>
+<div class="card">🩺 Annual Checkup</div>`
+}
+
+if(risk=="medium"){
+document.body.className="medium"
+badge.innerText="MODERATE RISK"
+badge.style.background="#F59E0B"
+
+cards.innerHTML=`
+<div class="card">💓 Monitor BP Daily</div>
+<div class="card">🧂 Reduce Sodium</div>
+<div class="card">🚶 Increase Physical Activity</div>`
+}
+
+if(risk=="high"){
+document.body.className="high"
+badge.innerText="HIGH RISK — ACT NOW"
+badge.style.background="#EF4444"
+
+cards.innerHTML=`
+<div class="card">👨‍⚕️ Consult Cardiologist</div>
+<div class="card">🔥 Lifestyle Overhaul</div>
+<div class="card">📅 Immediate Checkup</div>`
+}
+
+}
+
+const konami=[38,38,40,40,37,39,37,39,66,65]
+let i=0
+
+document.addEventListener("keydown",e=>{
+if(e.keyCode===konami[i]){
+i++
+if(i===konami.length){
+showResult("high")
+alert("Demo Mode Activated")
+}
+}else i=0
+})
+
+</script>
+
+</body>
 </html>
