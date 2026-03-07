@@ -138,6 +138,17 @@ export const Heart3DVisualization = ({ riskPercentage = 25, className = "" }) =>
       (gltf) => {
         const model = gltf.scene;
         
+        // Center and scale the model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1.5 / maxDim; // Scale to fit nicely
+        
+        model.position.sub(center); // Center the model
+        model.scale.set(scale, scale, scale);
+        model.userData.baseScale = scale;
+        
         // Apply material to all meshes
         model.traverse((child) => {
           if (child.isMesh) {
@@ -153,9 +164,9 @@ export const Heart3DVisualization = ({ riskPercentage = 25, className = "" }) =>
           }
         });
 
-        model.scale.set(0.015, 0.015, 0.015);
         scene.add(model);
         heartModelRef.current = model;
+        console.log('Heart GLB model loaded successfully');
       },
       undefined,
       (error) => {
@@ -278,7 +289,7 @@ export const Heart3DVisualization = ({ riskPercentage = 25, className = "" }) =>
         const beat2 = Math.sin(time * beatSpeed * Math.PI * 4) * 0.3;
         const scale = 1 + (beat1 * 0.06 + beat2 * 0.03);
         
-        const baseScale = heartModelRef.current.userData?.baseScale || 0.015;
+        const baseScale = heartModelRef.current.userData?.baseScale || 1;
         heartModelRef.current.scale.set(scale * baseScale, scale * baseScale, scale * baseScale);
         heartModelRef.current.position.y = Math.sin(time * 0.5) * 0.05;
 
