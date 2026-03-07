@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Suspense, lazy } from "react";
+import { useState, useRef, useEffect } from "react";
 import "@/App.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
@@ -10,9 +10,6 @@ import { Separator } from "./components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import axios from "axios";
-
-// Lazy load the 3D heart visualization
-const Heart3DVisualization = lazy(() => import('./components/Heart3DVisualization'));
 
 import { 
   Heart, 
@@ -879,56 +876,140 @@ const ImageUploadSection = ({ imagePreview, setImagePreview }) => {
   );
 };
 
-// AR Heart Visualization Section with 3D GLB Model
+// AR Heart Visualization Section with CSS-based Heart Animation
 const ARVisualizationSection = ({ riskPercentage = 25 }) => {
-  const getStatusInfo = () => {
+  const getHeartStyles = () => {
     if (riskPercentage <= 40) {
-      return { statusText: 'Healthy Heart', statusColor: 'text-green-500' };
+      return {
+        color: '#22C55E',
+        glowColor: 'rgba(34, 197, 94, 0.4)',
+        animationDuration: '1.5s',
+        statusText: 'Healthy Heart',
+        statusColor: 'text-green-500'
+      };
     } else if (riskPercentage <= 70) {
-      return { statusText: 'Moderate Risk', statusColor: 'text-yellow-500' };
+      return {
+        color: '#EAB308',
+        glowColor: 'rgba(234, 179, 8, 0.4)',
+        animationDuration: '1s',
+        statusText: 'Moderate Risk',
+        statusColor: 'text-yellow-500'
+      };
     } else {
-      return { statusText: 'High Risk', statusColor: 'text-red-500' };
+      return {
+        color: '#EF4444',
+        glowColor: 'rgba(239, 68, 68, 0.4)',
+        animationDuration: '0.6s',
+        statusText: 'High Risk',
+        statusColor: 'text-red-500'
+      };
     }
   };
 
-  const statusInfo = getStatusInfo();
+  const styles = getHeartStyles();
 
   return (
     <section id="visualization" className="py-16 md:py-24" data-testid="ar-visualization-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <Badge className="mb-4 bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600">
-            <Heart className="h-3 w-3 mr-1" />
-            3D Interactive Model
-          </Badge>
           <h2 className="section-title text-2xl md:text-3xl font-bold text-[#0F172A] mb-4" data-testid="ar-title">
             AR Heart Visualization
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Interactive 3D heart model with real-time risk indicators. The heart color and beat speed dynamically change based on your predicted risk level.
+            Interactive heart model with real-time risk indicators. The heart color and beat speed change based on your risk level.
           </p>
         </div>
 
         <div 
           className="aspect-video max-w-5xl mx-auto rounded-3xl shadow-2xl overflow-hidden relative"
+          style={{ background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)' }}
           data-testid="ar-container"
         >
-          <Suspense fallback={
-            <div 
-              className="w-full h-full flex flex-col items-center justify-center"
-              style={{ background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)' }}
-            >
-              <Heart className="h-24 w-24 text-[#EF4444] animate-heartbeat mb-6" />
-              <p className="text-white/80 text-lg font-medium mb-2">Loading 3D Heart Model...</p>
-              <div className="flex items-center gap-2 mt-4">
-                <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse" />
-                <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                <div className="h-2 w-2 bg-[#0D9488] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+          <div 
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+              backgroundSize: '32px 32px'
+            }}
+          />
+          
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="relative">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    width: `${180 + i * 40}px`,
+                    height: `${180 + i * 40}px`,
+                    left: `${-(90 + i * 20)}px`,
+                    top: `${-(90 + i * 20)}px`,
+                    border: `2px solid ${styles.color}`,
+                    opacity: 0.3 - i * 0.08,
+                    animation: `pulse-ring ${styles.animationDuration} ease-in-out infinite`,
+                    animationDelay: `${i * 0.3}s`
+                  }}
+                />
+              ))}
+              
+              <div 
+                className="relative"
+                style={{
+                  filter: `drop-shadow(0 0 30px ${styles.glowColor}) drop-shadow(0 0 60px ${styles.glowColor})`
+                }}
+              >
+                <svg
+                  className="w-32 h-32 md:w-40 md:h-40"
+                  viewBox="0 0 24 24"
+                  fill={styles.color}
+                  style={{
+                    animation: `heartbeat ${styles.animationDuration} ease-in-out infinite`
+                  }}
+                  data-testid="animated-heart-svg"
+                >
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
               </div>
             </div>
-          }>
-            <Heart3DVisualization riskPercentage={riskPercentage} className="w-full h-full" />
-          </Suspense>
+            
+            <div className="absolute bottom-20 left-0 right-0 flex justify-center">
+              <svg className="w-full max-w-md h-16 opacity-60" viewBox="0 0 400 50">
+                <path
+                  d="M0,25 L80,25 L100,25 L110,10 L120,40 L130,25 L150,25 L200,25 L220,25 L230,5 L240,45 L250,25 L270,25 L320,25 L340,25 L350,10 L360,40 L370,25 L400,25"
+                  fill="none"
+                  stroke={styles.color}
+                  strokeWidth="2"
+                  className="ecg-line"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2">
+            <p className="text-white/70 text-sm">Heart Risk Level</p>
+            <p className={`text-xl font-bold ${styles.statusColor}`} data-testid="ar-status-text">{styles.statusText}</p>
+            <p className="text-white/60 text-sm">{riskPercentage.toFixed(1)}% probability</p>
+          </div>
+          
+          <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2 text-xs text-white/70">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-3 h-3 rounded-full bg-green-500"></span>
+              <span>0-40%: Low Risk</span>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+              <span>41-70%: Moderate</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500"></span>
+              <span>71-100%: High Risk</span>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2 text-xs text-white/70">
+            <p>AR visualization placeholder</p>
+            <p className="text-white/50">Unity WebGL ready</p>
+          </div>
         </div>
 
         <div className="text-center mt-6 space-y-2">
@@ -939,7 +1020,7 @@ const ARVisualizationSection = ({ riskPercentage = 25 }) => {
             <span className="text-red-500 font-medium"> red </span>(high risk)
           </p>
           <p className="text-xs text-slate-500">
-            Heartbeat speed increases with risk level • Drag to rotate • Auto-rotating when idle
+            Heartbeat speed increases with risk level • Ready for Unity WebGL integration
           </p>
         </div>
       </div>
